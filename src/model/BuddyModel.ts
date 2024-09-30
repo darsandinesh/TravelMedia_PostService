@@ -3,34 +3,34 @@ import mongoose, { Schema, Document } from 'mongoose';
 interface ITravelBuddy extends Document {
   userId: string;
   travelDate: Date;
-  travelType: string;  // e.g., 'solo', 'family', 'friends', etc.
+  travelType: string;  
   location: string;
   description: string;
   interests: [
     {
-      userId: string; // Users interested in this travel
-      interestedOn: Date;  // Timestamp when the user showed interest
+      userId?: string; 
+      interestedOn?: Date;  
     }
   ];
   participants: [
     {
-      userId: string;  // Users who have joined the travel
-      joinedOn: Date;  // Timestamp when they joined
+      userId?: string;  
+      joinedOn?: Date;  
     }
   ];
-  maxParticipants: number;  // Maximum number of participants allowed
+  maxParticipants: number;  
   created_at: Date;
-  isPrivate: boolean; // True if only invited users can join
+  isPrivate: boolean; 
   isDeleted: boolean;
-  travelDuration: number; // Duration of the travel in days
+  travelDuration: number; 
   preferences: {
-    budget: string; // e.g., 'low', 'medium', 'high'
-    accommodation: string; // e.g., 'hotel', 'hostel', 'camping'
-    transportMode: string; // e.g., 'car', 'flight', 'train', 'bus'
+    budget: string; 
+    accommodation: string; 
+    transportMode: string; 
   };
-  travelStatus: string;  // e.g., 'upcoming', 'ongoing', 'completed'
-  mediaUrls: string[];  // URLs for images or videos uploaded
-  report: [
+  travelStatus?: string;  
+  mediaUrls: string[];  
+  report?: [
     {
       userId: string;
       reason: string;
@@ -64,7 +64,6 @@ const TravelBuddySchema: Schema = new Schema({
     {
       userId: {
         type: String,
-        required: true,
       },
       interestedOn: {
         type: Date,
@@ -76,7 +75,6 @@ const TravelBuddySchema: Schema = new Schema({
     {
       userId: {
         type: String,
-        required: true,
       },
       joinedOn: {
         type: Date,
@@ -134,11 +132,9 @@ const TravelBuddySchema: Schema = new Schema({
     {
       userId: {
         type: String,
-        required: true,
       },
       reason: {
         type: String,
-        required: true,
       },
       reportDate: {
         type: Date,
@@ -148,4 +144,4 @@ const TravelBuddySchema: Schema = new Schema({
   ],
 });
 
-export default mongoose.model<ITravelBuddy>('TravelBuddy', TravelBuddySchema);
+export const TravelBuddy = mongoose.model<ITravelBuddy>('TravelBuddy', TravelBuddySchema);

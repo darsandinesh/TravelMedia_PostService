@@ -20,9 +20,9 @@ class PostController {
         }
     }
 
-    async fetchedAllPosts(page:number) {
+    async fetchedAllPosts(page: number) {
         try {
-            console.log(page,'-------------------------hello')
+            console.log(page, '-------------------------hello')
             const result = await this.postService.getAllPosts(page)
             console.log(result, '-----------------------return in post controller');
             return result;
@@ -44,6 +44,77 @@ class PostController {
     async getNewPosts() {
         try {
             const result = await this.postService.getNewPosts();
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    async likePost(data: { logged: string, postId: string }) {
+        try {
+            console.log(data)
+            const result = await this.postService.likePost(data);
+            return result;
+        } catch (error) {
+            console.log('error in the likepost')
+        }
+    }
+
+    async unlikePost(data: { logged: string, postId: string }) {
+        try {
+            console.log(data)
+            const result = await this.postService.unlikePost(data);
+            return result;
+        } catch (error) {
+            console.log('error in the likepost')
+        }
+    }
+
+    async comment(data: any) {
+        try {
+            console.log(data)
+            const result = await this.postService.comment(data);
+            return result;
+        } catch (error) {
+            console.log('error in the comment post')
+        }
+    }
+
+    async deleteComment(data: any) {
+        try {
+            console.log(data)
+            const result = await this.postService.deleteComment(data);
+            return result;
+        } catch (error) {
+            console.log('error in the comment post')
+        }
+    }
+
+    async getPost(postId: string) {
+        try {
+            console.log(postId);
+            const result = await this.postService.getPost(postId);
+            return result;
+        } catch (error) {
+            console.log('error in getPost postController -->', error);
+        }
+    }
+
+    // find buddy controller codes are written below
+
+    async findBuddy(data: any) {
+        try {
+            console.log(data);
+            const result = await this.postService.findBuddy(data);
+            return result
+        } catch (error) {
+            console.log('error in the findbuddy', error);
+        }
+    }
+
+    async getfindBuddy(page: number) {
+        try {
+            const result = await this.postService.getfindBuddy(page);
             return result;
         } catch (error) {
 

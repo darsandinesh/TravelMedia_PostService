@@ -11,6 +11,14 @@ export default class MessageHandler {
                 console.log('Post Service - operation', operation);
                 response = await postController.addpost(data);
                 break;
+            case 'findBuddy':
+                console.log('Post Service -operation', operation);
+                response = await postController.findBuddy(data);
+                break
+            case 'getfindBuddy':
+                console.log('Post Service -operation', operation);
+                response = await postController.getfindBuddy(data);
+                break
             case 'get-all-posts':
                 console.log('Post Service - operation', operation);
                 response = await postController.fetchedAllPosts(data);
@@ -20,8 +28,28 @@ export default class MessageHandler {
                 response = await postController.fetchUserPosts(data)
                 break;
             case 'getNewPosts':
-                console.log('Post Service - operation : ',operation);
+                console.log('Post Service - operation : ', operation);
                 response = await postController.getNewPosts();
+                break;
+            case 'likePost':
+                console.log('post service - operation ', operation);
+                response = await postController.likePost(data);
+                break;
+            case 'unlikePost':
+                console.log('post service - operation ', operation);
+                response = await postController.unlikePost(data);
+                break;
+            case 'comment':
+                console.log('post service - operation :', operation);
+                response = await postController.comment(data);
+                break;
+            case 'deletComment':
+                console.log('post service - operation :', operation);
+                response = await postController.deleteComment(data);
+                break;
+            case 'getPost':
+                console.log('post service - operation', operation);
+                response = await postController.getPost(data);
                 break;
             default:
                 response = { error: 'Operation not found' };
