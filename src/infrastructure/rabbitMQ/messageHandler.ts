@@ -11,6 +11,18 @@ export default class MessageHandler {
                 console.log('Post Service - operation', operation);
                 response = await postController.addpost(data);
                 break;
+            case "edit-post":
+                console.log('Post Service - operation', operation);
+                response = await postController.editPost(data);
+                break;
+            case 'deletePost':
+                console.log('Post Service -operation', operation);
+                response = await postController.deletePost(data);
+                break;
+            case 'reportPost':
+                console.log('Post Service -operation', operation);
+                response = await postController.reportPost(data);
+                break;
             case 'findBuddy':
                 console.log('Post Service -operation', operation);
                 response = await postController.findBuddy(data);
@@ -50,6 +62,10 @@ export default class MessageHandler {
             case 'getPost':
                 console.log('post service - operation', operation);
                 response = await postController.getPost(data);
+                break;
+            case 'deleteImage':
+                console.log('POst service - operation :',operation);
+                response = await postController.deleteImage(data);
                 break;
             default:
                 response = { error: 'Operation not found' };

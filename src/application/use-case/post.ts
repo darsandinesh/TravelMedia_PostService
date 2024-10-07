@@ -24,6 +24,7 @@ class PostService {
                         return imageUrl;
                     })
                 );
+                console.log('5');
                 originalNames = post.images.map((image) => image.originalname);
             }
 
@@ -46,6 +47,81 @@ class PostService {
 
             return { success: true, message: "Data successfully saved" };
 
+
+        } catch (error) {
+            const err = error as Error;
+            return { success: false, message: err.message }
+        }
+    }
+
+    async editPost(post: IAddPostData): Promise<{ success: boolean, message: string, data?: any }> {
+        try {
+            let imageUrls: string[] = [];
+            let originalNames: string[] = [];
+
+            console.log(post.images)
+
+            if (post.images && post.images.length > 0) {
+                imageUrls = await Promise.all(
+                    post.images.map(async (image) => {
+                        const buffer = Buffer.isBuffer(image.buffer) ? image.buffer : Buffer.from(image.buffer);
+                        const imageUrl = await uploadFileToS3(buffer, image.originalname);
+                        return imageUrl;
+                    })
+                );
+                console.log('1212')
+                originalNames = post.images.map((image) => image.originalname);
+            }
+            console.log()
+            const editPost = {
+                userId: post.userId,
+                postId: post.postId,
+                description: post.description,
+                location: post.place,
+                imageUrl: imageUrls,
+                originalName: originalNames
+            }
+
+
+            const result = await this.postRepo.edit(editPost);
+
+            if (!result.success) {
+                return { success: false, message: "Data not saved, error occurred" };
+            }
+
+            return { success: true, message: "Data edited successful" };
+
+        } catch (error) {
+            const err = error as Error;
+            return { success: false, message: err.message }
+        }
+    }
+
+    async deletePost(id: string): Promise<{ success: boolean, message: string }> {
+        try {
+
+            console.log(id);
+            const response: any = await this.postRepo.deletPost(id);
+
+            if (response.modifiedCount == 0) {
+                return { success: false, message: 'unable to delte the post' }
+            }
+            return { success: true, message: 'post deleted' }
+        } catch (error) {
+            const err = error as Error;
+            return { success: false, message: err.message }
+        }
+    }
+
+    async reportPost(data: { userId: string, postId: string, reason: string }): Promise<{ success: boolean, message: string }> {
+        try {
+            const response = await this.postRepo.reportPost(data);
+
+            if (response) {
+                return { success: true, message: 'Reported the post' }
+            } else {
+                return { success: false, message: 'Unable to report the post' }
+            }
 
         } catch (error) {
             const err = error as Error;
@@ -83,6 +159,7 @@ class PostService {
     async fetchUserPosts(id: string): Promise<{ success: boolean, message: string, data?: IPost[] }> {
         try {
             const result = await this.postRepo.findUserPost(id);
+            console.log(result, '-------res in fetchUserpost')
             if (!result.success || !result.data) {
                 return { success: true, message: "No posts found" };
             }
@@ -303,6 +380,19 @@ class PostService {
             return { success: true, message: 'Images and user datas sent', data: postsWithImages };
         } catch (Error) {
 
+        }
+    }
+
+    async deleteImage(data: { index: number, postId: string }) {
+        try {
+            const result = await this.postRepo.deleteImage(data);
+            console.log(result);
+            if (result.success && result.res?.modifiedCount == 1) {
+                return { success: true, message: 'Image delted' }
+            }
+            return { success: false, messsage: 'Something went wrong' }
+        } catch (error) {
+            return { success: false, message: 'Something went wrong' };
         }
     }
 }

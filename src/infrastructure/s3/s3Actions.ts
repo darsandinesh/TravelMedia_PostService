@@ -34,6 +34,7 @@ export async function uploadFileToS3(fileBuffer: Buffer, originalname: string): 
     console.log('123')
     try {
         await upload.done();
+        console.log('1234')
         return imageName;
     } catch (err) {
         console.error('Error uploading file to S3:', err);

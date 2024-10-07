@@ -3,6 +3,7 @@ import { Post } from "../../model/PostModel";
 import { TravelBuddy } from '../../model/BuddyModel'
 import { IPost, ISavePostData } from "../entities/IPost";
 import { IPostRepository } from "./IPostRepository";
+import { databaseConnection } from "../../infrastructure/database/mongodb";
 
 export class PostRepository implements IPostRepository {
     async save(post: ISavePostData): Promise<{ success: boolean; message: string; data?: IPost }> {
@@ -32,6 +33,85 @@ export class PostRepository implements IPostRepository {
         }
     }
 
+    async edit(post: any): Promise<{ success: boolean; message: string; data?: any }> {
+        try {
+
+            console.log('edit 1')
+            // Update the post with new description, location, and image URLs
+            const update = await Post.updateOne(
+                { _id: post.postId },
+                {
+                    $set: {
+                        description: post.description,
+                        location: post.location,
+                    },
+                    $push: {
+                        imageUrl: { $each: post.imageUrl }, // Use $push with $each to add multiple images
+                    },
+                }
+            );
+
+            console.log(update)
+
+            if (update.modifiedCount === 0) {
+                return { success: false, message: 'Unable to update post: No changes made or post not found' };
+            }
+
+            return { success: true, message: 'Post updated successfully', data: update };
+
+        } catch (error) {
+            // Log the error for debugging purposes
+            console.error('Error while updating post:', error);
+
+            return { success: false, message: 'Unable to update the post due to server error' };
+        }
+    }
+
+    async deletPost(id: string) {
+        try {
+
+            let res = await Post.updateOne({ _id: id }, { $set: { isDelete: true } });
+            console.log(res);
+            return res
+        } catch (error) {
+            console.error('Error while updating post:', error);
+
+            return { success: false, message: 'Unable to detete the post due to server error' };
+        }
+    }
+
+    async reportPost(data: { userId: string, postId: string, reason: string }) {
+        try {
+            console.log(data);
+
+            const reportData = {
+                UserId: data.userId,
+                reason: data.reason,
+                status: 'pending',
+                reportDate: new Date()
+            }
+
+            const updatePost = await Post.findByIdAndUpdate(
+                data.postId,
+                {
+                    $push: {
+                        reportPost: reportData
+                    }
+                },
+                { new: true }
+            )
+
+            if (updatePost) {
+                return true
+            } else {
+                return false
+            }
+        } catch (error) {
+            return false
+        }
+    }
+
+
     async findAllPost(page: number): Promise<{ success: boolean, message: string, data?: IPost[] }> {
         try {
             const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page * 5);
@@ -49,7 +129,7 @@ export class PostRepository implements IPostRepository {
     async findUserPost(id: String): Promise<{ success: boolean, message: string, data?: IPost[] }> {
         try {
 
-            const posts = await Post.find({ userId: id }).sort({ created_at: -1 });
+            const posts = await Post.find({ userId: id, isDelete: false }).sort({ created_at: -1 });
             console.log(posts, '----post data');
             if (!posts || posts.length === 0) {
                 return { success: true, message: "No posts found" };
@@ -137,11 +217,11 @@ export class PostRepository implements IPostRepository {
         avatar: string,
         userName: string,
         parentCommentId?: string
-        replayText?:string,
+        replayText?: string,
     }) {
         try {
             // Basic validation
-            if ( !data.postId || !data.userId) {
+            if (!data.postId || !data.userId) {
                 return false;
             }
 
@@ -220,16 +300,16 @@ export class PostRepository implements IPostRepository {
     async deleteComment(data: {
         postId: string,
         commentId: string,
-        userId: string,
+        userId?: string,
         parentCommentId?: string
     }) {
         try {
             if (!data.postId || !data.commentId || !data.userId) {
                 throw new Error('Invalid data');
             }
-    
+
             let post;
-    
+
             if (data.parentCommentId) {
                 // Deleting a reply from a comment
                 post = await Post.updateOne(
@@ -260,18 +340,18 @@ export class PostRepository implements IPostRepository {
                     }
                 );
             }
-    
+
             if (post.modifiedCount === 0) {
                 throw new Error('Comment or reply not found or not authorized to delete');
             }
-    
+
             return post;
         } catch (error) {
             console.log('Error in deleteComment method:', error);
             return null;
         }
     }
-    
+
 
     async getPost(id: string): Promise<{ success: boolean, message: string, data?: any }> {
         try {
@@ -287,6 +367,22 @@ export class PostRepository implements IPostRepository {
 
             return { success: true, message: 'data found', data: posts }
 
+        } catch (error) {
+            console.log("Error to fetch single post ->", error);
+            return { success: false, message: 'something went wrong' };
+        }
+    }
+
+    async deleteImage(data: { index: number, postId: string }) {
+        try {
+            const images = await Post.findOne({ _id: data.postId })
+            const imageKey = images?.imageUrl[data.index];
+           
+            const update = await Post.updateOne({ _id: data.postId }, {
+                $pull: { imageUrl: imageKey }
+            })
+
+            return { success: true, res: update }
         } catch (error) {
             console.log("Error to fetch single post ->", error);
             return { success: false, message: 'something went wrong' };

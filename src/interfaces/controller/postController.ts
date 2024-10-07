@@ -20,6 +20,36 @@ class PostController {
         }
     }
 
+    async editPost(data: IAddPostData) {
+        try {
+            const result = await this.postService.editPost(data);
+            return result;
+        } catch (error) {
+            console.log('error in edit post-->', error);
+            throw error;
+        }
+    }
+
+    async deletePost(id: string) {
+        try {
+            const result = await this.postService.deletePost(id);
+            return result;
+        } catch (error) {
+            console.log('error in delet post-->', error);
+            throw error;
+        }
+    }
+
+    async reportPost(data: { userId: string, postId: string, reason: string }) {
+        try {
+            const result = await this.postService.reportPost(data);
+            return result;
+        } catch (error) {
+            console.log('error in delet post-->', error);
+            throw error;
+        }
+    }
+
     async fetchedAllPosts(page: number) {
         try {
             console.log(page, '-------------------------hello')
@@ -97,6 +127,16 @@ class PostController {
             return result;
         } catch (error) {
             console.log('error in getPost postController -->', error);
+        }
+    }
+
+    // delete images from the post
+    async deleteImage(data: { index: number, postId: string }) {
+        try {
+            const result = await this.postService.deleteImage(data);
+            return result
+        } catch (error) {
+
         }
     }
 

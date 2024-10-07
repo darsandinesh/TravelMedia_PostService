@@ -34,6 +34,7 @@ export interface IAddPostData {
         buffer: Buffer;
         originalname: string;
     }[];
+    postId?:string
 }
 
 
