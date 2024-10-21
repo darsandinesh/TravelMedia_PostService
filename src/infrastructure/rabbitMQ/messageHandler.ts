@@ -67,6 +67,10 @@ export default class MessageHandler {
                 console.log('POst service - operation :',operation);
                 response = await postController.deleteImage(data);
                 break;
+            case 'getSavedPosts':
+                console.log('post service - operation :',operation);
+                response = await postController.savedPosts(data);
+                break;
             default:
                 response = { error: 'Operation not found' };
                 break;

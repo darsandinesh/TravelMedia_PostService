@@ -37,6 +37,7 @@ export class PostRepository implements IPostRepository {
         try {
 
             console.log('edit 1')
+            console.log(post)
             // Update the post with new description, location, and image URLs
             const update = await Post.updateOne(
                 { _id: post.postId },
@@ -190,26 +191,6 @@ export class PostRepository implements IPostRepository {
         }
     }
 
-
-    // async comment(data: { comment: string, postId: string, userId: string, avatar: string, userName: string }) {
-    //     try {
-
-    //         if (!data.comment || !data.postId || !data.userId) {
-    //             return false;
-    //         }
-
-    //         const post = await Post.updateOne(
-    //             { _id: data.postId },
-    //             { $addToSet: { comments: { UserId: data.userId, content: data.comment, userName: data.userName, avatar: data.avatar } } }
-    //         )
-    //         console.log(post)
-    //         return post;
-    //     } catch (error) {
-    //         console.log('error in likepost in postRepo', error);
-    //         return null
-    //     }
-    // }
-
     async comment(data: {
         content: string,
         postId: string,
@@ -265,37 +246,6 @@ export class PostRepository implements IPostRepository {
             return null;
         }
     }
-
-
-    // async deletComment(data: { commentId: string, postId: string }) {
-    //     try {
-    //         // Validate inputs
-    //         console.log(data)
-    //         if (!data.commentId || !data.postId) {
-    //             return false;
-    //         }
-
-    //         // Find the post and remove the comment using $pull
-    //         const post = await Post.updateOne(
-    //             { _id: data.postId },
-    //             { $pull: { comments: { _id: data.commentId } } } // Remove the comment by its _id
-    //         );
-
-    //         console.log(post)
-    //         if (post.modifiedCount === 0) {
-    //             console.log('No comments were removed');
-    //             return false;
-    //         }
-
-    //         console.log('Comment deleted:', post);
-    //         return post;
-
-    //     } catch (error) {
-    //         console.log('Error deleting comment in deleteComment:', error);
-    //         return null;
-    //     }
-    // }
-
 
     async deleteComment(data: {
         postId: string,
@@ -377,7 +327,7 @@ export class PostRepository implements IPostRepository {
         try {
             const images = await Post.findOne({ _id: data.postId })
             const imageKey = images?.imageUrl[data.index];
-           
+
             const update = await Post.updateOne({ _id: data.postId }, {
                 $pull: { imageUrl: imageKey }
             })
@@ -388,6 +338,28 @@ export class PostRepository implements IPostRepository {
             return { success: false, message: 'something went wrong' };
         }
     }
+
+    async savedPosts(data: string[]) {
+        try {
+           console.log(data,'----------data')
+            const posts = await Post.find({
+                _id: { $in: data },   
+                isDelete: false       
+            }).sort({ created_at: -1 });  
+    
+            console.log(posts, '----post data');
+    
+            if (!posts || posts.length === 0) {
+                return { success: true, message: "No posts found" };
+            }
+    
+            return { success: true, message: "Posts found", data: posts };
+        } catch (error) {
+            console.error("Error fetching posts:", error);
+            return { success: false, message: "An error occurred while fetching posts" };
+        }
+    }
+    
 
 
     async saveFindBuddy(data: any) {

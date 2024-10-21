@@ -395,6 +395,34 @@ class PostService {
             return { success: false, message: 'Something went wrong' };
         }
     }
+
+    async savedPosts(data: string[]) {
+        try {
+            const result:any = await this.postRepo.savedPosts(data);
+
+            if (!result && !result.data) {
+                return { success: false, message: 'Unable to find the data' }
+            }
+
+            const postsWithImages = await Promise.all(result.data?.map(async (post:any) => {
+                if (post.imageUrl && post.imageUrl.length > 0) {
+                    const imageUrls = await Promise.all(post.imageUrl.map(async (imageKey:any) => {
+                        const s3Url = await fetchFileFromS3(imageKey, 604800);
+                        return s3Url
+                    }))
+                    const plainPost = (post as Document).toObject();
+                    return {
+                        ...plainPost, imageUrl: imageUrls,
+                    };
+                }
+                return post;
+            }))
+
+            return { success: true, message: 'Images and user data sent', data: postsWithImages };
+        } catch (error) {
+            return { success: false, message: 'Something went wrong' };
+        }
+    }
 }
 
 export { PostService };

@@ -140,6 +140,16 @@ class PostController {
         }
     }
 
+    async savedPosts(data: string[]) {
+        try {
+            console.log(data,'data in sthe savedd post-------')
+            const result = await this.postService.savedPosts(data);
+            return result
+        } catch (error) {
+            console.log('Error in the savedPosts -->', error);
+        }
+    }
+
     // find buddy controller codes are written below
 
     async findBuddy(data: any) {
