@@ -10,7 +10,8 @@ const s3 = new S3Client({
         accessKeyId:config.bucketAccessKey,
         secretAccessKey:config.bucketAccessPassword
     },
-    region:config.bucketRegion
+    region:config.bucketRegion,
+    forcePathStyle: true
 })
 
 export default s3;

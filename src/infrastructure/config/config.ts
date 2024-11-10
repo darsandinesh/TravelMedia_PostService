@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config = {
-    port: parseInt(process.env.PORT as string) || 5002,
+    port: parseInt(process.env.PORT as string) || 4002,
     dbURI: process.env.DB_URI || '',
     rabbitMq_url: process.env.RABBITMQ_URL || '',
     bucketAccessKey: process.env.S3_ACCESS_KEY,
