@@ -52,12 +52,20 @@ class PostController {
 
     async fetchedAllPosts(page: number) {
         try {
-            console.log(page, '-------------------------hello')
-            const result = await this.postService.getAllPosts(page)
-            console.log(result, '-----------------------return in post controller');
+            const result = await this.postService.getAllPosts(page);
+            console.log(result,'------------respostcontroller')
             return result;
         } catch (error) {
 
+        }
+    }
+
+    async fetchReportPosts(page: number) {
+        try {
+            const result = await this.postService.fetchReportPosts(page);
+            return result;
+        } catch (error) {
+            return { success: false, message: 'Internal server error' }
         }
     }
 
@@ -97,6 +105,16 @@ class PostController {
             return result;
         } catch (error) {
             console.log('error in the likepost')
+        }
+    }
+
+    async searchPost(data: { searchTerm: string, filter: string }) {
+        try {
+            const result = await this.postService.searchPost(data);
+            return result
+        } catch (error) {
+            console.log('Error in the serachPost - >', error);
+            return { success: false, message: 'Internal Server Error' };
         }
     }
 
@@ -142,7 +160,7 @@ class PostController {
 
     async savedPosts(data: string[]) {
         try {
-            console.log(data,'data in sthe savedd post-------')
+            console.log(data, 'data in sthe savedd post-------')
             const result = await this.postService.savedPosts(data);
             return result
         } catch (error) {

@@ -113,17 +113,44 @@ export class PostRepository implements IPostRepository {
     }
 
 
-    async findAllPost(page: number): Promise<{ success: boolean, message: string, data?: IPost[] }> {
+    async findAllPost(page: number): Promise<{ success: boolean, message: string, count?: number, data?: IPost[] }> {
         try {
-            const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page * 5);
+            const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).skip((page-1) * 6).limit(page * 6);
+            const totalPosts = await Post.countDocuments({ isDelete: false });
             if (!posts) {
                 return { success: false, message: "no posts found" };
             }
-            return { success: true, message: "post found", data: posts };
+            return { success: true, message: "post found", data: posts, count: totalPosts };
         } catch (error) {
             const err = error as Error;
             console.log("Error fetching all post", err);
             throw new Error(`Error fetching post: ${err.message}`);
+        }
+    }
+
+    async fetchReportPosts(page: number): Promise<{ success: boolean, message: string, count?: number, data?: IPost[] }> {
+        try {
+            const posts = await Post.find({
+                isDelete: false,
+                reportPost: { $exists: true, $not: { $size: 0 } }
+            })
+                .sort({ created_at: -1 })
+                .limit(page * 5);
+
+            const totalReportedPosts = await Post.countDocuments({
+                isDelete: false,
+                reportPost: { $exists: true, $not: { $size: 0 } }
+            });
+
+            console.log(posts, '-----------in repor posts')
+            if (!posts) {
+                return { success: false, message: "no posts found" };
+            }
+            return { success: true, message: "post found", data: posts, count: totalReportedPosts };
+        } catch (error) {
+            const err = error as Error;
+            console.log("Error fetching reported post", err);
+            throw new Error(`Error fetching reported post: ${err.message}`);
         }
     }
 
@@ -341,25 +368,54 @@ export class PostRepository implements IPostRepository {
 
     async savedPosts(data: string[]) {
         try {
-           console.log(data,'----------data')
+            console.log(data, '----------data')
             const posts = await Post.find({
-                _id: { $in: data },   
-                isDelete: false       
-            }).sort({ created_at: -1 });  
-    
+                _id: { $in: data },
+                isDelete: false
+            }).sort({ created_at: -1 });
+
             console.log(posts, '----post data');
-    
+
             if (!posts || posts.length === 0) {
                 return { success: true, message: "No posts found" };
             }
-    
+
             return { success: true, message: "Posts found", data: posts };
         } catch (error) {
             console.error("Error fetching posts:", error);
             return { success: false, message: "An error occurred while fetching posts" };
         }
     }
-    
+
+    async searchPost(data: { searchTerm: string; filter: string }) {
+        try {
+            console.log(data, '------om repo')
+            const searchRegex = new RegExp(data.searchTerm, 'i');
+            const query: any = {
+                isDelete: false,
+            };
+
+            if (data.filter === 'description') {
+                console.log('if')
+                query.description = searchRegex;
+            } else if (data.filter === 'location') {
+                console.log('else if')
+                query.location = searchRegex;
+            } else {
+                console.log('else')
+                query.$or = [
+                    { description: searchRegex },
+                    { location: searchRegex },
+                ];
+            }
+            console.log(query, 'q')
+            const posts = await Post.find(query);
+            return posts;
+        } catch (error) {
+            console.log("Error in searchPost in postRepo:", error);
+            return null
+        }
+    }
 
 
     async saveFindBuddy(data: any) {

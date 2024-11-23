@@ -35,6 +35,10 @@ export default class MessageHandler {
                 console.log('Post Service - operation', operation);
                 response = await postController.fetchedAllPosts(data);
                 break;
+            case 'get-reported-post':
+                console.log('Post Service - operation', operation);
+                response = await postController.fetchReportPosts(data);
+                break;
             case 'get-user-posts':
                 console.log('Post Service - operation', operation);
                 response = await postController.fetchUserPosts(data)
@@ -51,6 +55,10 @@ export default class MessageHandler {
                 console.log('post service - operation ', operation);
                 response = await postController.unlikePost(data);
                 break;
+            case 'search_post':
+                console.log('post service - operation:', operation);
+                response = await postController.searchPost(data);
+                break;
             case 'comment':
                 console.log('post service - operation :', operation);
                 response = await postController.comment(data);
@@ -64,11 +72,11 @@ export default class MessageHandler {
                 response = await postController.getPost(data);
                 break;
             case 'deleteImage':
-                console.log('POst service - operation :',operation);
+                console.log('POst service - operation :', operation);
                 response = await postController.deleteImage(data);
                 break;
             case 'getSavedPosts':
-                console.log('post service - operation :',operation);
+                console.log('post service - operation :', operation);
                 response = await postController.savedPosts(data);
                 break;
             default:

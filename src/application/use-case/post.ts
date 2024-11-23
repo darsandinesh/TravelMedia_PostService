@@ -129,9 +129,11 @@ class PostService {
         }
     }
 
-    async getAllPosts(page: number): Promise<{ success: boolean, message: string, data?: IPost[] }> {
+    async getAllPosts(page: number): Promise<{ success: boolean, message: string, data?: IPost[], count?: number }> {
         try {
             const result = await this.postRepo.findAllPost(page);
+
+            console.log(result, '------------res')
             if (!result.success || !result.data) {
                 return { success: false, message: "No data found" };
             }
@@ -144,15 +146,39 @@ class PostService {
                     }))
                     const plainPost = (post as Document).toObject();
                     return {
-                        ...plainPost, imageUrl: imageUrls,
+                        ...plainPost, imageUrl: imageUrls
                     };
                 }
                 return post;
             }))
-            return { success: true, message: 'Images and user datas sent', data: postsWithImages };
+            return { success: true, message: 'Images and user datas sent', data: postsWithImages, count: result.count };
         } catch (error) {
             console.error("Error in user Posts:", error);
             throw new Error(`Error fetching user posts: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async fetchReportPosts(page: number): Promise<{ success: boolean, message: string, data?: IPost[], count?: number }> {
+        try {
+            const result = await this.postRepo.fetchReportPosts(page);
+            if (!result.success || !result.data) {
+                return { success: false, message: 'No data found' };
+            }
+
+            const postsWithImages = await Promise.all(result.data?.map(async (post) => {
+                if (post.imageUrl && post.imageUrl.length > 0) {
+                    const imageUrls = await Promise.all(post.imageUrl.map(async (imageKey) => {
+                        const s3Url = await fetchFileFromS3(imageKey, 604800);
+                        return s3Url
+                    }));
+                    const plainPost = (post as Document).toObject();
+                    return { ...plainPost, imageUrl: imageUrls }
+                }
+                return post;
+            }))
+            return { success: true, message: 'Images and user data sent', data: postsWithImages, count: result.count }
+        } catch (error) {
+            return { success: false, message: 'Internal Server Error' }
         }
     }
 
@@ -240,6 +266,37 @@ class PostService {
         } catch (error) {
             console.log('Error in likePost in applicaiton user service', error);
             return { success: false, message: 'Someting went wrong' }
+        }
+    }
+
+    async searchPost(data: { searchTerm: string, filter: string }): Promise<{ success: boolean, message: string, data?: any[] }> {
+        try {
+            const posts = await this.postRepo.searchPost(data);
+            console.log(posts, '------data for the search post');
+
+            if (posts && posts.length > 0) {
+                const processedPosts = await Promise.all(
+                    posts.map(async (post) => {
+                        const imageUrls = await Promise.all(
+                            post.imageUrl.map(async (imageKey: string) => {
+                                const s3Url = await fetchFileFromS3(imageKey, 604800);
+                                return s3Url;
+                            })
+                        );
+                        return {
+                            ...post.toObject(),
+                            imageUrl: imageUrls,
+                        };
+                    })
+                );
+
+                return { success: true, message: 'Post filtered data', data: processedPosts };
+            }
+
+            return { success: false, message: 'No posts found' };
+        } catch (error) {
+            console.log('Error in searchPost in application user service', error);
+            return { success: false, message: 'Something went wrong' };
         }
     }
 
@@ -398,15 +455,15 @@ class PostService {
 
     async savedPosts(data: string[]) {
         try {
-            const result:any = await this.postRepo.savedPosts(data);
+            const result: any = await this.postRepo.savedPosts(data);
 
             if (!result && !result.data) {
                 return { success: false, message: 'Unable to find the data' }
             }
 
-            const postsWithImages = await Promise.all(result.data?.map(async (post:any) => {
+            const postsWithImages = await Promise.all(result.data?.map(async (post: any) => {
                 if (post.imageUrl && post.imageUrl.length > 0) {
-                    const imageUrls = await Promise.all(post.imageUrl.map(async (imageKey:any) => {
+                    const imageUrls = await Promise.all(post.imageUrl.map(async (imageKey: any) => {
                         const s3Url = await fetchFileFromS3(imageKey, 604800);
                         return s3Url
                     }))
